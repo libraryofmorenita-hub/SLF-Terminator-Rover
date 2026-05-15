@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLF Terminator — ARNOLD</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --card: #161616;
+    --border: #222222;
+    --amber: #f59e0b;
+    --amber-dim: #92400e;
+    --green: #22c55e;
+    --green-dim: #14532d;
+    --white: #f5f5f5;
+    --muted: #6b7280;
+    --subtle: #374151;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a { color: var(--muted); font-size: 12px; text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--white); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(34,197,94,0.04) 0%, transparent 50%);
+  }
+  .hero-eyebrow {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-eyebrow::before { content: ''; width: 40px; height: 1px; background: var(--amber); }
+  .hero h1 {
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 700; line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+  .hero h1 span { color: var(--amber); }
+  .hero-sub {
+    font-size: 18px; color: var(--muted); max-width: 560px;
+    margin-bottom: 48px; line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex; gap: 48px; flex-wrap: wrap;
+  }
+  .hero-stat { }
+  .hero-stat-num { font-size: 36px; font-weight: 700; color: var(--amber); letter-spacing: -0.02em; }
+  .hero-stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+
+  /* SECTIONS */
+  section { padding: 100px 48px; max-width: 1200px; margin: 0 auto; }
+  .section-full { max-width: 100%; padding: 100px 0; }
+  .section-full > * { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
+
+  .eyebrow {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--amber); }
+
+  h2 { font-size: clamp(32px, 4vw, 52px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; line-height: 1.1; }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+  p { color: var(--muted); line-height: 1.8; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* THREAT SECTION */
+  .threat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    margin-top: 60px;
+  }
+  .threat-card {
+    background: var(--card); padding: 40px;
+    border: 1px solid var(--border);
+  }
+  .threat-card:first-child { border-radius: 4px 0 0 0; }
+  .threat-card:nth-child(2) { border-radius: 0 4px 0 0; }
+  .threat-card:nth-child(3) { border-radius: 0 0 0 4px; }
+  .threat-card:last-child { border-radius: 0 0 4px 0; }
+  .threat-num { font-size: 48px; font-weight: 700; color: var(--amber); letter-spacing: -0.03em; margin-bottom: 8px; }
+  .threat-card p { font-size: 14px; margin-top: 8px; }
+
+  /* PROTOTYPE SECTION */
+  .proto-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; margin-top: 60px; }
+  .proto-components { display: flex; flex-direction: column; gap: 2px; }
+  .proto-item {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 20px 24px; display: flex; gap: 16px; align-items: flex-start;
+  }
+  .proto-item:first-child { border-radius: 4px 4px 0 0; }
+  .proto-item:last-child { border-radius: 0 0 4px 4px; }
+  .proto-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); margin-top: 6px; flex-shrink: 0; }
+  .proto-item h4 { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px; letter-spacing: 0.04em; }
+  .proto-item p { font-size: 13px; }
+
+  .specs-block { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 32px; }
+  .spec-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+  .spec-val { font-size: 13px; font-weight: 600; color: var(--amber); }
+
+  /* PIPELINE SECTION */
+  .pipeline-bg { background: var(--dark); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .mermaid-wrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: 4px;
+    padding: 40px; margin-top: 48px; overflow-x: auto;
+  }
+  .mermaid { text-align: center; }
+
+  .phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 40px; }
+  .phase-card { background: var(--card); border: 1px solid var(--border); padding: 28px; }
+  .phase-card:first-child { border-radius: 4px 0 0 4px; }
+  .phase-card:last-child { border-radius: 0 4px 4px 0; }
+  .phase-num { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+  .phase-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .phase-card p { font-size: 13px; }
+
+  /* ARCHITECT SECTION */
+  .architect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 60px; }
+  .arch-card { background: var(--card); border: 1px solid var(--border); padding: 36px; }
+  .arch-card:first-child { border-radius: 4px 0 0 0; }
+  .arch-card:nth-child(2) { border-radius: 0 4px 0 0; }
+  .arch-card:nth-child(3) { border-radius: 0 0 0 4px; }
+  .arch-card:last-child { border-radius: 0 0 4px 0; }
+  .arch-num { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); margin-bottom: 14px; font-weight: 600; }
+  .arch-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; letter-spacing: 0.04em; }
+  .arch-card p { font-size: 13px; }
+
+  /* TIMELINE */
+  .timeline { margin-top: 60px; display: flex; flex-direction: column; gap: 2px; }
+  .timeline-item { display: grid; grid-template-columns: 120px 1fr; gap: 24px; background: var(--card); border: 1px solid var(--border); padding: 20px 28px; align-items: center; }
+  .timeline-item:first-child { border-radius: 4px 4px 0 0; }
+  .timeline-item:last-child { border-radius: 0 0 4px 4px; }
+  .timeline-date { font-size: 12px; color: var(--amber); letter-spacing: 0.1em; font-weight: 600; }
+  .timeline-item p { font-size: 13px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer p { font-size: 12px; color: var(--muted); }
+  .footer-tag { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--amber); }
+
+  /* TAG */
+  .tag {
+    display: inline-block; font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 4px 10px;
+    border: 1px solid var(--border); border-radius: 2px;
+    color: var(--muted); margin-right: 6px; margin-bottom: 6px;
+  }
+  .tag-amber { border-color: var(--amber-dim); color: var(--amber); }
+  .tag-green { border-color: var(--green-dim); color: var(--green); }
+
+  /* DOCUMENTS SECTION */
+  .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 48px; }
+  .doc-card { background: var(--card); border: 1px solid var(--border); padding: 40px; display: flex; flex-direction: column; gap: 24px; }
+  .doc-card:first-child { border-radius: 4px 0 0 4px; }
+  .doc-card:last-child { border-radius: 0 4px 4px 0; }
+  .doc-card h3 { font-size: 18px; margin-bottom: 6px; }
+  .doc-card p { font-size: 13px; }
+  .doc-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 11px 20px; width: fit-content;
+    border: 1px solid var(--amber); border-radius: 3px;
+    color: var(--amber); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; text-decoration: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  .doc-btn:hover { background: var(--amber); color: var(--black); }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    section { padding: 60px 24px; }
+    .threat-grid, .proto-layout, .architect-grid, .phase-grid, .doc-grid { grid-template-columns: 1fr; }
+    h2 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">SLF Terminator · ARNOLD</div>
+  <div class="nav-links">
+    <a href="#threat">The Threat</a>
+    <a href="#prototype">Prototype</a>
+    <a href="#pipeline">AI Pipeline</a>
+    <a href="#architect">Architect</a>
+    <a href="#documents">Documents</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" style="position:relative;">
+  <!-- Rover illustration -->
+  <div style="position:absolute; right:0; bottom:0; height:75vh; pointer-events:none; z-index:0; opacity:0.22;">
+    <img src="rover_hero.svg" style="height:100%; width:auto; display:block;" alt="ARNOLD Rover Blueprint">
+  </div>
+
+  <div style="position:relative; z-index:1;"><div class="hero-eyebrow">Systems Engineering Case Study</div>
+  <h1>The <span>ARNOLD</span><br>Initiative</h1>
+  <p class="hero-sub">An autonomous rover engineered to detect, contain, and eliminate invasive Spotted Lanternflies — with a Phase 2 AI vision pipeline built for ecological intelligence at scale.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">2,200</div>
+      <div class="hero-stat-label">Trees protected · Loyola Arboretum</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">4hrs</div>
+      <div class="hero-stat-label">Autonomous operational window</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">12V</div>
+      <div class="hero-stat-label">Power architecture · 5.16Ah</div>
+    </div>
+  </div>
+</div></div>
+
+<hr class="divider">
+
+<!-- THE THREAT -->
+<section id="threat">
+  <div class="eyebrow">01 — The Threat</div>
+  <h2>America's Most<br>Dangerous Invasive Insect</h2>
+  <p style="max-width:600px;">The Spotted Lanternfly is not a nuisance — it is an ecological and economic emergency. Without autonomous, scalable intervention, its spread is a matter of when, not if.</p>
+
+  <div class="threat-grid">
+    <div class="threat-card">
+      <div class="threat-num">$324M</div>
+      <h3>Annual Economic Impact</h3>
+      <p>Projected annual damage to Pennsylvania's agriculture sector alone. Threatens viticulture, fruit, timber, and nursery industries across the Mid-Atlantic.</p>
+    </div>
+    <div class="threat-card">
+      <div class="threat-num">2,800+</div>
+      <h3>Jobs at Risk</h3>
+      <p>Direct employment threatened in agriculture and related industries in Pennsylvania if SLF populations go uncontrolled.</p>
+    </div>
+    <div class="threat-card">
+      <div class="threat-num">2,200</div>
+      <h3>Trees at Loyola Maryland</h3>
+      <p>The Loyola Maryland campus is a Level II accredited arboretum. Home to 114 varieties of trees — all under growing threat from SLF infestation.</p>
+    </div>
+    <div class="threat-card">
+      <div class="threat-num">0</div>
+      <h3>Data from Existing Solutions</h3>
+      <p>Manual traps, chemical sprayers, and biological controls generate no intelligence. Every capture is a dead end. ARNOLD changes that.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- THE PROTOTYPE -->
+<section id="prototype">
+  <div class="eyebrow">02 — The Prototype</div>
+  <h2>Meet ARNOLD</h2>
+  <p style="max-width:600px;">A fully functional autonomous rover integrating CAD-designed hardware, embedded systems control, and passive biological trapping into a single deployable unit.</p>
+
+  <div class="proto-layout">
+    <div class="proto-components">
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>Plexiglass Bug Trap</h4>
+          <p>Laser-cut transparent enclosure designed to admit SLF while preventing escape. Transparency sustains the milkweed plant inside through photosynthesis.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>Peppermint Vent Ducts</h4>
+          <p>3D-printed directional vents scented with peppermint oil — a known SLF attractant. Engineered to allow entry and prevent escape through directionality.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>Milkweed Toxin Delivery</h4>
+          <p>Live milkweed plant housed inside the trap. Cardiac glycosides in milkweed are selectively lethal to SLF — preserving non-target species.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>Autonomous Insecticide Sprayer</h4>
+          <p>Servo motor actuates a custom-designed probe on a scheduled cycle during the rover's final autonomous lap. Iterated through multiple probe configurations.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>Raspberry Pi Control System</h4>
+          <p>Manages autonomous path navigation, remote operation via camera feed, obstacle avoidance via quad motion sensors, and spray scheduling.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-dot"></div>
+        <div>
+          <h4>12V Power Architecture</h4>
+          <p>Rechargeable 12V, 5.16Ah battery powering all subsystems — rover drive, Raspberry Pi, and spray actuation — for 4 continuous hours of autonomous operation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="specs-block">
+        <h3 style="margin-bottom:24px; color: var(--amber);">Design Specs</h3>
+        <div class="spec-row"><span class="spec-label">Power Supply</span><span class="spec-val">12V / 5.16Ah</span></div>
+        <div class="spec-row"><span class="spec-label">Runtime</span><span class="spec-val">4 Hours</span></div>
+        <div class="spec-row"><span class="spec-label">Control Modes</span><span class="spec-val">Autonomous + Remote</span></div>
+        <div class="spec-row"><span class="spec-label">Spray System</span><span class="spec-val">Servo-Actuated, Scheduled</span></div>
+        <div class="spec-row"><span class="spec-label">Trap Construction</span><span class="spec-val">Laser-Cut Plexiglass</span></div>
+        <div class="spec-row"><span class="spec-label">Custom Components</span><span class="spec-val">3D-Printed (PLA)</span></div>
+        <div class="spec-row"><span class="spec-label">Navigation</span><span class="spec-val">Line-Tracking + Obstacle Avoidance</span></div>
+        <div class="spec-row"><span class="spec-label">Sensors</span><span class="spec-val">4× Motion (Quad-Array)</span></div>
+        <div class="spec-row"><span class="spec-label">Toxin Delivery</span><span class="spec-val">Milkweed (Cardiac Glycosides)</span></div>
+        <div class="spec-row"><span class="spec-label">Field Validated</span><span class="spec-val">Loyola Arboretum, 2025</span></div>
+      </div>
+
+      <div style="margin-top:24px;">
+        <span class="tag tag-amber">CAD Design</span>
+        <span class="tag tag-amber">3D Printing</span>
+        <span class="tag tag-amber">Embedded Systems</span>
+        <span class="tag">Raspberry Pi</span>
+        <span class="tag">Python</span>
+        <span class="tag">Servo Control</span>
+        <span class="tag">Laser Cutting</span>
+        <span class="tag">Power Systems</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visual documentation placeholder -->
+  <div style="margin-top:40px; padding:32px 36px; border:1px dashed var(--border); border-radius:4px; display:flex; align-items:center; justify-content:space-between; gap:32px; background:rgba(22,22,22,0.4);">
+    <div>
+      <div style="font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Visual Documentation</div>
+      <h4 style="font-size:15px; font-weight:600; color:var(--white); margin-bottom:6px;">CAD Renders & Field Photos</h4>
+      <p style="font-size:13px;">CAD models, assembly photography, and field validation footage — adding soon.</p>
+    </div>
+    <div style="flex-shrink:0; display:flex; gap:10px;">
+      <div style="width:88px; height:64px; border:1px dashed var(--border); border-radius:3px; background:var(--card); display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtle);">CAD</span>
+      </div>
+      <div style="width:88px; height:64px; border:1px dashed var(--border); border-radius:3px; background:var(--card); display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtle);">Photos</span>
+      </div>
+      <div style="width:88px; height:64px; border:1px dashed var(--border); border-radius:3px; background:var(--card); display:flex; align-items:center; justify-content:center;">
+        <span style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtle);">Video</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- AI PIPELINE -->
+<div class="pipeline-bg section-full" id="pipeline">
+  <div>
+    <div class="eyebrow">03 — Vision & Analytics</div>
+    <h2>Phase 2: Intelligent<br>Computer Vision Pipeline</h2>
+    <p style="max-width:600px;">The prototype proves the hardware. The pipeline proves the mission. ARNOLD's next evolution transforms every capture event into ecological intelligence.</p>
+    <p style="max-width:600px; margin-top:14px; font-size:12px; color:var(--subtle); border-left:2px solid var(--border); padding-left:14px; line-height:1.7;">Phase 1 hardware has been built and field-validated. Phase 2 and Phase 3 represent the proposed engineering roadmap.</p>
+
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+flowchart LR
+    A["📷 Camera Input\nEdge Capture"] --> B["⚙️ Embedded Processing\nRaspberry Pi / FPGA"]
+    B --> C{"🧠 Decision Logic\nSpecies Classification"}
+    C -->|"SLF Detected"| D["🎯 Actuator Output\nTrap + Spray Trigger"]
+    C -->|"Non-Target Species"| E["✅ Pass-Through\nNo Action"]
+    D --> F["📊 Data Logging\nTimestamp · GPS · Count"]
+    E --> F
+    F --> G["🗺️ Population Map\nEcological Dashboard"]
+    G --> H["📤 Research Export\nCSV · API · GeoJSON"]
+
+    style A fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f5
+    style B fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f5
+    style C fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f5
+    style D fill:#1a1a1a,stroke:#22c55e,color:#f5f5f5
+    style E fill:#1a1a1a,stroke:#374151,color:#f5f5f5
+    style F fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f5
+    style G fill:#1a1a1a,stroke:#22c55e,color:#f5f5f5
+    style H fill:#1a1a1a,stroke:#22c55e,color:#f5f5f5
+      </div>
+    </div>
+
+    <div class="phase-grid" style="margin-top:40px;">
+      <div class="phase-card" style="border-radius:4px 0 0 4px;">
+        <div class="phase-num">Phase 1 — Complete</div>
+        <h4>Hardware Validation</h4>
+        <p>Functional prototype built, field-tested, and validated at Loyola Maryland Arboretum. Autonomous movement, trap containment, and spray actuation confirmed.</p>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num">Phase 2 — Roadmap</div>
+        <h4>Computer Vision Integration</h4>
+        <p>Camera-based species identification using trained CNN classifier. Real-time SLF vs. non-target differentiation. Object detection with frame-by-frame population counting.</p>
+      </div>
+      <div class="phase-card" style="border-radius:0 4px 4px 0;">
+        <div class="phase-num">Phase 3 — Vision</div>
+        <h4>Ecological Intelligence Platform</h4>
+        <p>GPS-tagged population heatmapping. Temporal trend analysis. Research-grade data export for entomology and agricultural science applications.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:40px; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:32px;">
+      <h3 style="margin-bottom:8px;">Why This Data Matters</h3>
+      <p style="max-width:700px;">Current pest control generates no intelligence. ARNOLD Phase 2 transforms every capture into a data point — answering where populations are highest, when they peak seasonally, which non-target species coexist, and how populations respond to intervention over time. This data infrastructure is replicable across vineyards, state parks, and agricultural research stations.</p>
+      <div style="margin-top:20px;">
+        <span class="tag tag-green">OpenCV</span>
+        <span class="tag tag-green">MobileNet / EfficientDet</span>
+        <span class="tag tag-green">Custom LoRA Fine-Tuning</span>
+        <span class="tag tag-green">GPS Logging</span>
+        <span class="tag tag-green">GeoJSON Export</span>
+        <span class="tag tag-green">Ecological Dashboard</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- THE ARCHITECT -->
+<section id="architect">
+  <div class="eyebrow">04 — The Architect</div>
+  <h2>Cross-Disciplinary<br>Systems Leadership</h2>
+  <p style="max-width:600px;">ARNOLD was not handed a scope. It was built from first principles — authored, designed, led, and field-validated by a team of four engineers under one systems architect.</p>
+
+  <div class="architect-grid">
+    <div class="arch-card">
+      <div class="arch-num">01 — Authorship</div>
+      <h4>Program Authorship</h4>
+      <p>Authored the original MRAF Design Proposal — defining project scope, team skill matrix, power calculations, control architecture, fabrication procedures, and societal impact framework from first principles.</p>
+    </div>
+    <div class="arch-card">
+      <div class="arch-num">02 — Integration</div>
+      <h4>Systems Integration</h4>
+      <p>Owned the integration layer: ensuring CAD designs were compatible with 3D print constraints, power calculations supported all subsystems simultaneously, and control modes did not conflict at the firmware level.</p>
+    </div>
+    <div class="arch-card">
+      <div class="arch-num">03 — Coordination</div>
+      <h4>Team Coordination</h4>
+      <p>Managed a 4-person cross-disciplinary team across design, fabrication, programming, and wiring — distributing labor by skill while ensuring cross-functional exposure throughout the development lifecycle.</p>
+    </div>
+    <div class="arch-card">
+      <div class="arch-num">04 — Iteration</div>
+      <h4>Iterative Problem-Solving</h4>
+      <p>The sprayer actuator probe went through multiple design iterations before achieving reliable servo attachment. Vent design was restructured mid-build when 3D print constraints made full-length vents impossible.</p>
+    </div>
+  </div>
+
+  <div class="timeline" style="margin-top:40px;">
+    <div class="timeline-item"><span class="timeline-date">Sep 2024</span><p>MRAF Proposal authored and submitted — full scope, power budget, team matrix, and fabrication procedure defined</p></div>
+    <div class="timeline-item"><span class="timeline-date">Oct 2024</span><p>CAD design finalized across all custom components — bug trap, vent ducts, sprayer probe, plant holder</p></div>
+    <div class="timeline-item"><span class="timeline-date">Nov 2024</span><p>Hardware assembly, wiring, and embedded control programming completed</p></div>
+    <div class="timeline-item"><span class="timeline-date">Dec 2024</span><p>Integration testing — sprayer probe iterated through multiple configurations until reliable actuation achieved</p></div>
+    <div class="timeline-item"><span class="timeline-date">Jan 2025</span><p>Field testing at Loyola Maryland Arboretum — path following, obstacle avoidance, and SLF attraction validated end-to-end</p></div>
+    <div class="timeline-item"><span class="timeline-date">Feb 2025</span><p>Final poster and live demonstration delivered — project closed with full documentation</p></div>
+  </div>
+
+  <div style="margin-top:48px; padding:32px; background:var(--card); border:1px solid var(--border); border-radius:4px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">Lead Engineer & Architect</div>
+      <h3 style="font-size:24px;">Amelia Arabe</h3>
+      <p style="font-size:13px; margin-top:4px;">Computer & Electrical Design Engineer · Loyola University Maryland, Class of 2025</p>
+    </div>
+    <div>
+      <span class="tag tag-amber">Systems Engineering</span>
+      <span class="tag tag-amber">Embedded Systems</span>
+      <span class="tag tag-amber">CAD Design</span>
+      <span class="tag">Program Management</span>
+      <span class="tag">Field Validation</span>
+      <span class="tag">Technical Documentation</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PROJECT DOCUMENTS -->
+<section id="documents">
+  <div class="eyebrow">05 — Project Documents</div>
+  <h2>Deliverables</h2>
+  <p style="max-width:600px;">The full design proposal and final presentation poster from the ARNOLD project — authored, presented, and field-validated through the Loyola MRAF Junior Design Program.</p>
+
+  <div class="doc-grid">
+    <div class="doc-card">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px;">Final Poster</div>
+        <h3>SLF Terminator — ARNOLD</h3>
+        <p>Presentation poster summarizing the system architecture, hardware components, field validation results, and Phase 2 vision pipeline roadmap. Delivered February 2025.</p>
+      </div>
+      <a class="doc-btn" href="files/SLF_Terminator_Poster.pdf" target="_blank">View Poster — PDF</a>
+    </div>
+    <div class="doc-card">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px;">Design Proposal</div>
+        <h3>MRAF Junior Design Proposal</h3>
+        <p>Full project proposal defining scope, power budget, team skill matrix, fabrication procedures, control architecture, and societal impact framework — authored from first principles. Submitted September 2024.</p>
+      </div>
+      <a class="doc-btn" href="files/SLF_Terminator_Design_Proposal.pdf" target="_blank">View Proposal — PDF</a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  <div>
+    <p>Loyola University Maryland · Department of Engineering</p>
+    <p style="margin-top:4px;">Sponsored by Dr. Yanko Kranov · MRAF Junior Design Program</p>
+  </div>
+  <div class="footer-tag">ARNOLD · SLF Terminator · 2025</div>
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1a1a1a',
+      primaryTextColor: '#f5f5f5',
+      primaryBorderColor: '#f59e0b',
+      lineColor: '#f59e0b',
+      secondaryColor: '#161616',
+      tertiaryColor: '#111111',
+      background: '#0a0a0a',
+      mainBkg: '#1a1a1a',
+      nodeBorder: '#f59e0b',
+      clusterBkg: '#161616',
+      titleColor: '#f5f5f5',
+      edgeLabelBackground: '#1a1a1a',
+      fontSize: '14px'
+    }
+  });
+</script>
+</body>
+</html>
